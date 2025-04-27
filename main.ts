@@ -21,11 +21,33 @@ server.tool(
         city: z.string().describe('The name of the city to fetch weather data for.'),
     },
     async ({ city }) => {
+            const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`)
+        const data = await response.json()
+
+        if(data.length === 0) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `No weather data available for ${city}.`,
+                    }
+                ]
+            }
+        }
+        
+       
+        const temperature = data?.[0]?.temperature || 'No temperature data available.'
+        const {latitude, longitude} = data.results[0]
+
+        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m&current=temperature_2m,is_day,precipitation,rain&forecast_days=1`)
+        const weatherData = await weatherResponse.json()
+
+        
         return {
             content: [
                 {
                     type: 'text',
-                    text: `The current weather in ${city} is sunny`,
+                    text: JSON.stringify(data, null, 2),
                 }
             ]
         }
@@ -35,3 +57,6 @@ server.tool(
 //Escuchar las conexiones de los clientes
 const transport = new StdioServerTransport()
 await server.connect(transport)
+
+
+//INSTALAR EL INSPECTOR, IMPORTANTE
