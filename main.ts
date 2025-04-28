@@ -21,8 +21,10 @@ server.tool(
         city: z.string().describe('The name of the city to fetch weather data for.'),
     },
     async ({ city }) => {
-            const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`)
-        const data = await response.json()
+        const apiUrl = new URL(`https://geocoding-api.open-meteo.com/v1/search`);
+        apiUrl.searchParams.append('name', city);
+
+        const data = await fetch(apiUrl.toString()).then((res) => res.json())
 
         if(data.length === 0) {
             return {
@@ -34,20 +36,22 @@ server.tool(
                 ]
             }
         }
-        
        
-        const temperature = data?.[0]?.temperature || 'No temperature data available.'
         const {latitude, longitude} = data.results[0]
 
-        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m&current=temperature_2m,is_day,precipitation,rain&forecast_days=1`)
-        const weatherData = await weatherResponse.json()
+        const weatherUrl = new URL(`https://api.open-meteo.com/v1/forecast`);
+        weatherUrl.searchParams.append('latitude', latitude.toString())
+        weatherUrl.searchParams.append('longitude', longitude.toString())
+        weatherUrl.searchParams.append('current', 'temperature_2m,is_day,precipitation,rain')
+        weatherUrl.searchParams.append('temperature_unit', 'celsius')
 
+        const weatherData = await fetch(weatherUrl.toString()).then((res) => res.json())
         
         return {
             content: [
                 {
                     type: 'text',
-                    text: JSON.stringify(data, null, 2),
+                    text: JSON.stringify(weatherData, null, 2),
                 }
             ]
         }
@@ -58,5 +62,3 @@ server.tool(
 const transport = new StdioServerTransport()
 await server.connect(transport)
 
-
-//INSTALAR EL INSPECTOR, IMPORTANTE
