@@ -21,7 +21,7 @@ server.tool(
         city: z.string().describe('The name of the city to fetch weather data for.'),
     },
     async ({ city }) => {
-        const apiUrl = new URL(`https://geocoding-api.open-meteo.com/v1/search`);
+        const apiUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
         apiUrl.searchParams.append('name', city);
 
         const data = await fetch(apiUrl.toString()).then((res) => res.json())
@@ -39,12 +39,12 @@ server.tool(
        
         const {latitude, longitude} = data.results[0]
 
-        const weatherUrl = new URL(`https://api.open-meteo.com/v1/forecast`);
-        weatherUrl.searchParams.append('latitude', latitude.toString())
-        weatherUrl.searchParams.append('longitude', longitude.toString())
-        weatherUrl.searchParams.append('current', 'temperature_2m,is_day,precipitation,rain')
-        weatherUrl.searchParams.append('temperature_unit', 'celsius')
+        const weatherUrl = new URL("https://api.open-meteo.com/v1/forecast");
+        weatherUrl.searchParams.append("latitude", latitude.toString())
+        weatherUrl.searchParams.append("longitude", longitude.toString())
+        weatherUrl.searchParams.append("current", "temperature_2m,is_day,precipitation,rain")
 
+        console.log(weatherUrl)
         const weatherData = await fetch(weatherUrl.toString()).then((res) => res.json())
         
         return {
